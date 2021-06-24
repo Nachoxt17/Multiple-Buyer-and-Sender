@@ -48,9 +48,11 @@ contract MultipleBuyerAndSender {
     function isWhiteListMember(address _account) public view returns (bool _isWhiteListMember) {
         bool _isWhiteListMember = false;
 
-        for (i = 0; _isWhiteListMember == false; i++) {
+        for (i = 0; _isWhiteListMember == false && i < AddressesWhiteList.lenght; i++) {
             if(AddressesWhiteList[i] == _account){
                 isWhiteListMember = true;
+            } else {
+                isWhiteListMember = false;
             }
         }
 
