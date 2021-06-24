@@ -5,12 +5,10 @@ import "./contract-utils/UniswapV2Library.sol";
 import "./interfaces/uniswap/IUniswapV2Router02.sol";
 import "./interfaces/uniswap/IUniswapV2Pair.sol";
 import "./interfaces/uniswap/IUniswapV2Factory.sol";
-import "./contract-utils/Governable.sol";
-import "./contract-utils/Manageable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/math/SafeMath.sol";
 
-contract MultipleBuyerAndSender is Governable, Manageable {
+contract MultipleBuyerAndSender {
     //+-We use SafeMath to Improve Security:_
     using SafeMath for uint256;
 
@@ -20,90 +18,80 @@ contract MultipleBuyerAndSender is Governable, Manageable {
     address[] public AddressesWhiteList;
     address public fromToken;
     address public toToken;
+    //+-Mapping to take account of the Buyers who have already purchased toTokens and are Waiting to Withdraw them from the S.C.:_
+    mapping(address => uint) internal Buyers;
 
-    constructor(address _governor, address _UniSwapV2) public {
-        require(_governor != address(0), 'governable/governor-should-not-be-zero-address');
-        governor = _governor;
+    event FromTokensDeposited(
+        address account,
+        address fromToken,
+        uint amount
+    );
+
+    event fromTokensWithdrawn(
+        address account,
+        address fromToken,
+        uint amount
+    );
+
+    event ToTokensWithdrawn(
+        address account,
+        address toToken,
+        uint amount
+    );
+
+    constructor(address _firstWhiteListMember, address _UniSwapV2) public {
+        require(_firstWhiteListMember != address(0), 'WhiteList-Member-should-not-be-zero-address');
+        AddressesWhiteList.push(_firstWhiteListMember);
         UniSwapV2 = _UniSwapV2;
     }
 
-    function AddAddressToWhiteList(address newAddress) public returns(address[] memory){  
-        AddressesWhiteList.push(newAddress);
-    
-        return AddressesWhiteList;  
+    function isWhiteListMember(address _account) public view returns (bool _isWhiteListMember) {
+        bool _isWhiteListMember;
+
+        for (i = 0; _isWhiteListMember == true; i++) {  //for loop example
+            if(AddressesWhiteList[i] == _account){
+                isWhiteListMember = true;
+            } else {
+                isWhiteListMember = false;
+            }
+        }
+
+        return _isWhiteListMember;
     }
 
-    function DeleteAddressFromWhiteList(address ToDeleteAddress) public returns(address[] memory){ 
+    modifier onlyWhiteListMember {
+        require(isWhiteListMember(msg.sender), 'Only-WhiteList-Members-Allowed.');
+        _;
+    }
+
+    //+-Add an Address to the WhiteList:_
+    function AddAddressToWhiteList(address newAddress) public onlyWhiteListMember returns(address[] memory){  
+        AddressesWhiteList.push(newAddress);
+        return AddressesWhiteList;
+    }
+
+    //+-Delete an Address from the WhiteList:_
+    function DeleteAddressFromWhiteList(address ToDeleteAddress) public onlyWhiteListMember returns(address[] memory){ 
         uint256 _i = 0;
 
         while (AddressesWhiteList[_i] != ToDeleteAddress) {
             _i++;
             if(AddressesWhiteList[_i] == ToDeleteAddress){
                 delete AddressesWhiteList[_i];
+                break;
             }
         }
 
         return AddressesWhiteList;  
     }
 
-    function SeeAddressesWhiteList() view pure {
+    //+-See all the Addresses in the WhiteList:_
+    function SeeAddressesWhiteList() view onlyWhiteListMember {
         console.log(AddressesWhiteList);
     }
 
-    //+-Set the Address of the Smart Contracts of the Tokens that are going to be Swapped:_
-    function setSwapPair(address _fromToken, address _toToken) public {
-        fromToken = _fromToken;
-        toToken = _toToken;
-    }
-
-    //+-Swapping Tokens:_
-    function startSwap(
-        address token0, /**+-Token to give S.Contract Address. Ex:_ WETH.*/
-        address token1, /**+-Token to receive S.Contract Address. Ex:_ DAI.*/
-        uint256 amount0 /**+-Amount of the Asset "token0" that we want to Swap in the Transaction.*/
-    ) external {
-        //+-It looks for the Coin Pair in UniSwap:_
-        address pairAddress =
-            IUniswapV2Factory(UniSwapV2).getPair(token0, token1);
-        //+-You have to make sure that the Coin Pair actually exists in UniSwap:_
-        require(pairAddress != address(0), "This pool does not exist");
-    }
-}
-
-contract EthSwap {
-    address public fromToken;
-    address public toToken;
-    //+-Mapping to take account of the Buyers who have already purchased toTokens and are Waiting to Withdraw them from the S.C.:_
-    mapping(address => uint) internal Buyers;
-
-    event TokensDeposited(
-        address account,
-        address fromToken,
-        uint amount
-    );
-
-    event TokensWithdrawn(
-        address account,
-        address toToken,
-        uint amount
-    );
-
-    constructor(address _exchangeSmartContract) public {
-        exchangeSmartContract = _exchangeSmartContract;
-    }
-
-    //+-Set the Address of the Smart Contracts of the Tokens that are going to be Swapped:_
-    function setSwapPair(address _fromToken, address _toToken) public {
-        fromToken = _fromToken;
-        toToken = _toToken;
-    }
-
     //+-The User Deposits the Amount of fromTokens that is going to Swap:_
-    function provide(uint _amount) public payable {
-        //+-Checks that the User actually has that amount of Tokens in his/her Wallet:_
-        //require(IERC20(fromToken).balanceOf(msg.sender) >= _amount);
-        //+-(We don't need to implement this because the ERC-20 Standard already does it).
-
+    function depositTokens(uint _amount) public payable onlyWhiteListMember {
         //+-The User Deposits the Token in the S.C.:_
         IERC20(fromToken).transferFrom(msg.sender, address(this), _amount);
 
@@ -111,32 +99,12 @@ contract EthSwap {
         IERC20(fromToken).approve(UNISWAP_V2_ROUTER, _amount);
 
         //+-We issue a notice that the fromTokens have been Deposited:_
-        emit TokensDeposited(msg.sender, fromToken, _amount);
+        emit FromTokensDeposited(msg.sender, fromToken, _amount);
     }
 
-    function swap(uint256 _fromTokensAmount) public {
-        //+-Tenga una función swap(uint256 _amount) que use los provided fromTokens previamente Swappearlos por toTokens en UniSwapV2.
-        //+-We check that the UniSwapRouter actually is able to Withdraw the fromTokens for performing the Swap:_
-        require(IERC20(fromToken).approve(UNISWAP_V2_ROUTER, _fromTokensAmount));
-
-        //+-"path" is a List of Token Addresses that we want this Trade to Happen:_
-        address[] memory path;
-        path = new address[](2);
-        path[0] = fromToken;
-        //+-(We could have an "IntermediateToken" here just in case it would be a better deal to first Swap "fromToken" to "IntermediateToken" and then Swap it for "toToken").
-        path[1] = toToken;
-
-        //+-The S.C. performs the Swap with UniSwapV2Router:_
-        IUniswapV2Router01(UNISWAP_V2_ROUTER).swapExactTokensForTokens(_fromTokensAmount, 0, path, address(this), block.timestamp);
-
-        //+-If the Swap with UniSwapV2Router was Successful, when the "toTokens" are Deposited in the Exchange S.C. we assign that amount of "toTokens" to the Buyer:_
-        //require(IUniswapV2Router01(address(IUniswapV2Router01)).swapExactTokensForTokens(_fromTokensAmount, 0, path, address(this), block.timestamp));
-        //Buyers[msg.sender] = _toTokensAmount;
-    }
-
-    function  withdraw(uint256 _amount) public {//+-En esta función El Usuario debería poder retirar SOLO una Cantidad <= a Cantidad de toTokens que compró. 
+    function  withdraw(uint256 _amount) public onlyWhiteListMember {//+-In this Function The User can withdraw ONLY an Amount of Tokens <= to the Amount of Tokens that Bought. 
         //+-Checks that the S.C. actually has that amount of Tokens Available:_
-        require(IERC20(toToken).balanceOf(address(this)) >= _amount);
+        require(IERC20(fromToken || toToken).balanceOf(address(this)) >= _amount);
 
         //+-Checks that the User actually bought and is Owner of that amount of toTokens:_
         require(Buyers[msg.sender] <= _amount);
@@ -148,6 +116,62 @@ contract EthSwap {
         Buyers[msg.sender] = Buyers[msg.sender] - _amount;
 
         //+-We issue a notice that the toTokens have been Withdrawn:_
-        emit TokensWithdrawn(msg.sender, toToken, _amount);
+        emit ToTokensWithdrawn(msg.sender, toToken, _amount);
+    }
+
+    //+-Set the Address of the Smart Contracts of the Tokens that are going to be Swapped:_
+    function setSwapPair(address _fromToken, address _toToken) public onlyWhiteListMember {
+        fromToken = _fromToken;
+        toToken = _toToken;
+    }
+
+    //+-Swapping Tokens:_
+    function swapTokens(
+        uint256 _fromTokensAmount /**+-Amount of fromTokens that we want to Swap in the Transaction.*/
+    ) public onlyWhiteListMember {
+        //+-It looks for the Coin Pair in UniSwap:_
+        address pairAddress =
+            IUniswapV2Factory(UniSwapV2).getPair(fromToken, toToken);
+        //+-You have to make sure that the Coin Pair actually exists in UniSwap:_
+        require(pairAddress != address(0), "This pool does not exist");
+
+        //+-We check that the UniSwapRouter actually is able to Withdraw the fromTokens for performing the Swap:_
+        require(IERC20(fromToken).approve(UNISWAP_V2_ROUTER, _fromTokensAmount));
+
+        //+-"path" is a List of Token Addresses with which we want this Trade to Happen:_
+        address[] memory path;
+        path = new address[](2);
+        path[0] = fromToken;
+        path[1] = toToken;
+
+        //+-The S.C. performs the Swap with UniSwapV2Router:_
+        IUniswapV2Router01(UNISWAP_V2_ROUTER).swapExactTokensForTokens(_fromTokensAmount, 0, path, address(this), block.timestamp);
+
+        //+-If the Swap with UniSwapV2Router is Successful, when the "toTokens" are Deposited in the Exchange S.C. we assign that amount of "toTokens" to the Buyer:_
+        require(IUniswapV2Router01(address(IUniswapV2Router01)).swapExactTokensForTokens(_fromTokensAmount, 0, path, address(this), block.timestamp));
+        Buyers[msg.sender] = _toTokensAmount;
     }
 }
+
+/**
+contract EthSwap {
+
+    function swap(uint256 _fromTokensAmount) public {
+        //+-We check that the UniSwapRouter actually is able to Withdraw the fromTokens for performing the Swap:_
+        require(IERC20(fromToken).approve(UNISWAP_V2_ROUTER, _fromTokensAmount));
+
+        //+-"path" is a List of Token Addresses with which we want this Trade to Happen:_
+        address[] memory path;
+        path = new address[](2);
+        path[0] = fromToken;
+        path[1] = toToken;
+
+        //+-The S.C. performs the Swap with UniSwapV2Router:_
+        IUniswapV2Router01(UNISWAP_V2_ROUTER).swapExactTokensForTokens(_fromTokensAmount, 0, path, address(this), block.timestamp);
+
+        //+-If the Swap with UniSwapV2Router is Successful, when the "toTokens" are Deposited in the Exchange S.C. we assign that amount of "toTokens" to the Buyer:_
+        require(IUniswapV2Router01(address(IUniswapV2Router01)).swapExactTokensForTokens(_fromTokensAmount, 0, path, address(this), block.timestamp));
+        Buyers[msg.sender] = _toTokensAmount;
+    }
+}
+*/
