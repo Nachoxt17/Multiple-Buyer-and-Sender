@@ -4,6 +4,7 @@ node_modules
 node_modules/*
 .env
 hardhat.config.js
+*.config.js
 logs/*
 logs
 examples/*
