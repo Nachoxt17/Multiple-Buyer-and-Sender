@@ -1,20 +1,22 @@
 /* eslint-disable linebreak-style */
 /* eslint-disable no-console */
 /* eslint-disable no-undef */
+require("dotenv").config();
 require("@nomiclabs/hardhat-waffle");
 require("@nomiclabs/hardhat-etherscan");
 require("@nomiclabs/hardhat-waffle");
 
 // Go to https://www.alchemyapi.io, sign up, create
-// a new App in its dashboard, and replace "KEY" with its key
-const ALCHEMY_API_KEY = "rfF45aXtyItXE0ia89yfK9HgxaYKuE_O";
+// a new App in its dashboard, and replace "KEY" with its key in the ".env" file.
+const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
 
-// Replace this private key with your Ropsten account private key
+// Replace this private key with your Ropsten account private key in the ".env" file.
 // To export your private key from Metamask, open Metamask and
 // go to Account Details > Export Private Key
 // Be aware of NEVER putting real Ether into testing accounts
-const ROPSTEN_PRIVATE_KEY =
-  "ec20f200aa43f462b258a8e1598a34e551232ab57b846323a49f887b7c813c66";
+const ROPSTEN_PRIVATE_KEY = process.env.ROPSTEN_PRIVATE_KEY;
+
+const HARDHAT_MAINNET_FORK_KEY = process.env.HARDHAT_MAINNET_FORK_KEY;
 
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
@@ -46,7 +48,7 @@ module.exports = {
     },
     hardhat: {
       forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/S7yOMI0tydic_GX329eYLOeWqK_M7Fco",
+        url: "https://eth-mainnet.alchemyapi.io/v2/${HARDHAT_MAINNET_FORK_KEY}",
         blockNumber: 12610259,
       },
     },
