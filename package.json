@@ -1,8 +1,7 @@
 {
-  "name": "arbitrage-bot-between-uniswap-and-sushiswap-with-flashloans",
+  "name": "multiple-buyer-and-seller",
   "version": "0.1.0",
-  "description": "Arbitrage-Bot-between-UniSwap-and-SushiSwap-with-FlashLoans",
-  "author": "ignacioceaglio@protonmail.com",
+  "description": "Multiple-Buyer-and-Seller",
   "keywords": [
     "ethereum",
     "smart",
@@ -13,11 +12,6 @@
   ],
   "engines": {
     "node": "10.x"
-  },
-  "main": "index.js",
-  "scripts": {
-    "start": "node index.js",
-    "test": "node test.js"
   },
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "2.0.2",

@@ -16,8 +16,6 @@ const ALCHEMY_API_KEY = process.env.ALCHEMY_API_KEY;
 // Be aware of NEVER putting real Ether into testing accounts
 const ROPSTEN_PRIVATE_KEY = process.env.ROPSTEN_PRIVATE_KEY;
 
-const HARDHAT_MAINNET_FORK_KEY = process.env.HARDHAT_MAINNET_FORK_KEY;
-
 // This is a sample Hardhat task. To learn how to create your own go to
 // https://hardhat.org/guides/create-task.html
 
@@ -37,7 +35,7 @@ task("accounts", "Prints the list of accounts", async () => {
  * @type import('hardhat/config').HardhatUserConfig
  */
 module.exports = {
-  solidity: "0.8.4",
+  solidity: "0.6.6",
   paths: {
     artifacts: "./src/artifacts",
   },
@@ -45,12 +43,6 @@ module.exports = {
     ropsten: {
       url: `https://eth-ropsten.alchemyapi.io/v2/${ALCHEMY_API_KEY}`,
       accounts: [`0x${ROPSTEN_PRIVATE_KEY}`],
-    },
-    hardhat: {
-      forking: {
-        url: "https://eth-mainnet.alchemyapi.io/v2/${HARDHAT_MAINNET_FORK_KEY}",
-        blockNumber: 12610259,
-      },
     },
   },
 };

@@ -3,7 +3,6 @@ npm_modules/*
 node_modules
 node_modules/*
 .env
-hardhat.config.js
 logs/*
 logs
 examples/*
