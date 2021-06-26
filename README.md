@@ -1,6 +1,6 @@
 ## +-MULTIPLE-BUYER-AND-SENDER:\_
 
-+-For Testing the Successful S.C. DEO Deployed in the Ropsten Ethereum TestNet:\_
++-For Testing the Successful S.C. DEMO Deployed in the Ropsten Ethereum TestNet:\_
 Smart Contract deployed with the account: 0xF3CB703D6b7f8af4878c3428C0043b8Bdffc4a33
 https://ropsten.etherscan.io/address/0x11C5206Aa844c9583c94634A97B0eAbB3935f666
 
