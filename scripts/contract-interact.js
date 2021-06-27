@@ -37,14 +37,91 @@ async function SeeAddressesWhiteListInContract() {
       .SeeAddressesWhiteList()
       .encodeABI(),
   };
+
+  //+-Sign the transaction:_
+  const signPromise = web3.eth.accounts.signTransaction(
+    tx,
+    ROPSTEN_PRIVATE_KEY
+  );
+  signPromise
+    .then((signedTx) => {
+      web3.eth.sendSignedTransaction(
+        signedTx.rawTransaction,
+        function (err, hash) {
+          if (!err) {
+            console.log(
+              "The hash of your transaction is: ",
+              hash,
+              "\n Check Alchemy's Mempool to view the status of your transaction!"
+            );
+          } else {
+            console.log(
+              "Something went wrong when submitting your transaction:",
+              err
+            );
+          }
+        }
+      );
+    })
+    .catch((err) => {
+      console.log("Promise failed:", err);
+    });
 }
 
-/**
-async function SeeAddressesWhiteListInContract() {
-  const SeeAddressesWhiteList = await multipleBuyerAndSellerContract.methods
-    .SeeAddressesWhiteList()
-    .call();
-  console.log("The Addresses in the White List Are: " + SeeAddressesWhiteList);
+async function isWhiteListMemberContract() {
+  const nonce = await web3.eth.getTransactionCount(
+    ROPSTEN_PUBLIC_ADDRESS,
+    "latest"
+  ); // get latest nonce
+  const gasEstimate = await multipleBuyerAndSellerContract.methods
+    .isWhiteListMember(ROPSTEN_PUBLIC_ADDRESS)
+    .estimateGas(); // estimate gas
+
+  //+-Create the transaction:_
+  const tx = {
+    from: ROPSTEN_PUBLIC_ADDRESS,
+    to: contractAddress,
+    nonce: nonce,
+    gas: gasEstimate,
+    data: multipleBuyerAndSellerContract.methods
+      .isWhiteListMember(ROPSTEN_PUBLIC_ADDRESS)
+      .encodeABI(),
+  };
+
+  //+-Sign the transaction:_
+  const signPromise = web3.eth.accounts.signTransaction(
+    tx,
+    ROPSTEN_PRIVATE_KEY
+  );
+  signPromise
+    .then((signedTx) => {
+      web3.eth.sendSignedTransaction(
+        signedTx.rawTransaction,
+        function (err, hash) {
+          if (!err) {
+            console.log(
+              "The hash of your transaction is: ",
+              hash,
+              "\n Check Alchemy's Mempool to view the status of your transaction!"
+            );
+          } else {
+            console.log(
+              "Something went wrong when submitting your transaction:",
+              err
+            );
+          }
+        }
+      );
+    })
+    .catch((err) => {
+      console.log("Promise failed:", err);
+    });
 }
-SeeAddressesWhiteListInContract();
-*/
+
+async function ExecuteFunctionsHere() {
+  //const SeeWhiteList = await SeeAddressesWhiteListInContract();
+  //console.log("The Addresses in the White List Are: " + SeeWhiteList);
+  const isWLMember = await isWhiteListMemberContract();
+  console.log("Is this User a WhiteListMember?: " + isWLMember);
+}
+ExecuteFunctionsHere();

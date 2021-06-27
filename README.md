@@ -22,15 +22,13 @@ npm install
 +-(2)-Secondly, Copy and Paste the File ".env.example" inside the same Root Folder(You will Duplicate It) and then rename it removing the part of ".example" so that it looks like ".env" and then fill all the Data Needed Inside the File. In the part of "ALCHEMY_API_KEY"
 just write the KEY, not the whole URL.
 
-+-(3)-Go to the File "deploy.js" inside the Folder "scripts" and replace the sample Address "0x----------------------------------------" with your Ropsten Ethereum TestNet Wallet Address. It must be the same Address which Private Key you used in ROPSTEN_PRIVATE_KEY="\*\*\*" in the ".env" File.
-
-+-(4)-Now open a Terminal and let's run Ropsten Ethereum Test Network(https://hardhat.org/tutorial/deploying-to-a-live-network.html)(https://docs.openzeppelin.com/learn/deploying-and-interacting?pref=hardhat):\_
++-(3)-Now open a Terminal and let's run Ropsten Ethereum Test Network(https://hardhat.org/tutorial/deploying-to-a-live-network.html)(https://docs.openzeppelin.com/learn/deploying-and-interacting?pref=hardhat):\_
 
 ```sh
 npx hardhat run scripts/deploy.js --network ropsten
 ```
 
-+-(5)-To Interact with the Deployed S.C. you need to run contract-interact.js:\_
++-(4)-To Interact with the Deployed S.C. you need to run contract-interact.js:\_
 
 ```sh
 node scripts/contract-interact.js

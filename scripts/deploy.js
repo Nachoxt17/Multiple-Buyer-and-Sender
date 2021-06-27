@@ -1,3 +1,5 @@
+require("dotenv").config();
+const ROPSTEN_PUBLIC_ADDRESS = process.env.ROPSTEN_PUBLIC_ADDRESS;
 async function main() {
   const [deployer] = await ethers.getSigners();
 
@@ -7,7 +9,7 @@ async function main() {
     "MultipleBuyerAndSender"
   );
   const multipleBuyerAndSender = await MultipleBuyerAndSender.deploy(
-    "0xF3CB703D6b7f8af4878c3428C0043b8Bdffc4a33",
+    ROPSTEN_PUBLIC_ADDRESS,
     "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
     "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"
   );

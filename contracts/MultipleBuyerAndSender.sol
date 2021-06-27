@@ -45,7 +45,7 @@ contract MultipleBuyerAndSender {
         bool _isWhiteListMember = false;
         uint256 i;
 
-        for (i = 0; _isWhiteListMember == false && i < AddressesWhiteList.length; i++) {
+        for (i = 0; _isWhiteListMember == false && i <= AddressesWhiteList.length; i++) {
             if(AddressesWhiteList[i] == _account){
                 _isWhiteListMember = true;
             } else {
